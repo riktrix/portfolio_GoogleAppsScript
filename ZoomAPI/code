@@ -1,0 +1,61 @@
+//　zoomへの承認リクエスト
+function doGet() {
+  var service = getService();
+  if (service.hasAccess()) {
+    createAndSendDocument(service.getAccessToken());
+    return HtmlService.createHtmlOutput("Success");
+  }
+  // 承認されていない場合、承認リンクをHTMLページに表示
+  var authorizationUrl = service.getAuthorizationUrl();
+  var template = '<a href="' + authorizationUrl + '" target="_blank">Authorize</a>';
+  return HtmlService.createHtmlOutput(template);
+}
+
+//　OAuth 2.0 serviceのセットアップ
+function getService() {
+  // OAuth 2.0承認サービスの生成
+  return OAuth2.createService("zoom")
+    .setAuthorizationBaseUrl(PropertiesService.getScriptProperties().getProperty("AUTHORIZATION_URL")) // 認可エンドポイント,プロパティに格納
+    .setTokenUrl("https://zoom.us/oauth/token") // トークンエンドポイント
+
+    // zoomのクライアントIDおよびクライアントシークレットを設定
+    .setClientId(PropertiesService.getScriptProperties().getProperty("CLIENT_ID")) // OAuthクライアントID,プロパティに格納
+    .setClientSecret(PropertiesService.getScriptProperties().getProperty("CLIENT_SECRET")) // OAuthクライアントシークレット,プロパティに格納
+
+    // OAuth2.0 承認後のコールバック関数名の設定
+    .setCallbackFunction("authCallback")
+    // 承認トークンを維持するプロパティーストアの設定
+    .setPropertyStore(PropertiesService.getUserProperties())
+    // zoom APIリクエストのスコープ設定
+    .setScope("meeting:read");
+}
+
+//　最初のOAuth2承認の際のコールバック処理
+function authCallback(request) {
+  var service = getService();
+  var authorized = service.handleCallback(request);
+  if (authorized) {
+    createAndSendDocument(service.getAccessToken());
+    return HtmlService.createHtmlOutput("Success!");
+  }
+  return HtmlService.createHtmlOutput("Denied.");
+}
+
+//　APIからデータ取得
+function createAndSendDocument(accessToken) {
+  // zoom APIのURL v2/以降を指定
+  var appUrl = "https://api.zoom.us/v2/users/me/meetings";
+  // zoom APIの呼び出し
+  var response = UrlFetchApp.fetch(appUrl,
+  // ヘッダーにアクセストークンを設定
+    {
+      headers: {
+        Authorization: "Bearer " + accessToken
+      }
+    }
+  );
+  // レスポンスをJSON形式に変換
+  var result = JSON.parse(response.getContentText());　
+  console.log(result.meetings[0].start_time);
+  console.log(new Date(result.meetings[0].start_time));
+}
