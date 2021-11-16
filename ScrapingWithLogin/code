@@ -5,10 +5,10 @@ const cheerio = libpack.cheerio()
 class CookieUtil {
 
   static getValue(cookies, key) {
-    const cookiesArray = cookies.split(';');
+    const cookiesArray = cookies.split(";");
 
     for(const c of cookiesArray){
-      const cArray = c.split('=');
+      const cArray = c.split("=");
       if(cArray[0] == key){
         return cArray[1]
       }
@@ -26,13 +26,13 @@ function myFunction() {
   // ログインページを開く(GET)
 
   // リクエスト送信
-  response = UrlFetchApp.fetch('https://mamaworks.jp/login')
+  response = UrlFetchApp.fetch("https://mamaworks.jp/login")
 
   // レスポンスヘッダーからCookieを取得
   cookies = response.getHeaders()["Set-Cookie"];
   // Cookieから_freee-accounts_sessionを取得
-  let cookie_laravel_session = CookieUtil.getValue(cookies, 'laravel_session')
-  //  let cookie_XSRF_TOKEN = CookieUtil.getValue(cookies, 'XSRF-TOKEN')
+  let cookie_laravel_session = CookieUtil.getValue(cookies, "laravel_session")
+  //  let cookie_XSRF_TOKEN = CookieUtil.getValue(cookies, "XSRF-TOKEN")
 
   // コンテンツ(ログインページのHTML)を取得
   content = response.getContentText("UTF-8")
@@ -45,22 +45,22 @@ function myFunction() {
 
   // ログインフォーム送信(POST)
   headers = { // リクエストヘッダー
-    'cookie': 'laravel_session=' + cookie_laravel_session + ';',
-    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36'
+    "cookie": "laravel_session=" + cookie_laravel_session + ";",
+    "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36"
   }
   payload = { // リクエストパラメータ
-    '_token': token,
-    'email': PropertiesService.getScriptProperties().getProperty('email'),
-    'password': PropertiesService.getScriptProperties().getProperty('password'),
-    'previous_url': 'https://mamaworks.jp/login',
+    "_token": token,
+    "email": PropertiesService.getScriptProperties().getProperty("email"),
+    "password": PropertiesService.getScriptProperties().getProperty("password"),
+    "previous_url": "https://mamaworks.jp/login",
     }
   options = {
-    'method': 'post', // POSTメソッド
-    'headers': headers,
-    'payload': payload,
-    'followRedirects': false // リダイレクト処理を抑止
+    "method": "post", // POSTメソッド
+    "headers": headers,
+    "payload": payload,
+    "followRedirects": false // リダイレクト処理を抑止
   }
-  response = UrlFetchApp.fetch('https://mamaworks.jp/login', options)
+  response = UrlFetchApp.fetch("https://mamaworks.jp/login", options)
 
   content = response.getContentText("UTF-8")
   
